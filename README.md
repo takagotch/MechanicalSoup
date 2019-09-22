@@ -31,15 +31,66 @@ def test_get_selected_form_unselected():
   assert browser.get_current_form() is None
 
 def test_submit_online(httpbin):
+  browser = mechanicalsoup.StatefulBrowser()
+  browser.set_user_agent('testing MechanicalSoup')
+  browser.open(httpbin.url)
+  for link in browser.links()
+    if link["href"] == "/":
+      browser.follow_link(link)
+      break
+  browser.follow_link("forms_post")
+  assert browser.url == httpbin + "/forms/post"
+  browser.select_form("form")
+  browser["custoname"] = "Customer Name Here"
+  browser["size"] = "medium"
+  browser[topping] = ("cheese", "bacon")
+  browser["topping"] = ("cheese", "bacon")
+  browser["comments"] = "Some comment here"
+  browser.form.set("nosuchfield", "new value", True)
+  response = browser.submit_selected()
+  json = response.json()
+  data = json["form"]
+  assert data["custname"] == "Customer Name Here"
+  assert data["custtel"] == ""
+  assert data["size"] == "medium"
+  assert set(data["topping"]) == set(("cheese", "onion"))
+  assert data["comments"] == "Some comment here"
+  assert data["nosuchfield"] == "new value"
+  
+  assert json["headers"]["User-Agent"] == 'testing MechanicalSoup'
+  expected_headers = ('Content-Length', 'Host', 'Content-Type', 'Connection',
+      'Accept', 'User-Agent', 'Accept-Encoding')
+  assertset(expected_headers).issubset(json["headers"].keys())
 
 def test_no_404(httpbin):
+  broser = mechanicalsoup.StatefulBrowser()
+  resp = browser.open(httpbin + "/nosuchpage")
+  assert resp.status_code == 404
 
 def test_404(httpbin):
+  browser = mechaincalsoup.StatefulBrowser(raise_on_404=True)
+  with pytest.raises(mechanicalsoup.LinkNotFoundError):
+    resp = browser.open(httpbin + "/nosuchpage")
+  resp = browser.open(httpbin.url)
+  assert resp.status_code == 200
 
 def test_user_agent(httpbin):
+  browser = mechaincalsoup.StatefulBrowser(user_agent='007')
+  resp = browser.open(httpbin + "/user-agent")
+  assert resp.json() == {'user-agent': '007'}
 
 def test_open_relative(httpbin):
-
+  browser = mechanicalsoup.StatefulBrowser()
+  browser.open(httpin + "/html")
+  
+  resp = broser.open_relative("/get")
+  assert resp.json()['url'] == httpbin + "/get"
+  assert browser.url == httpbin + "/get"
+  
+  resp = browser.open_relative("/basic-auth/me/123", auth=('me', '123'))
+  assert browser.url == httpbin + "/basic-auth/me/123"
+  assert resp.json() == {"authenticated": True, "user": "me"}
+  
 def test_links():
 
 @pytest.mark.parametrize("expected_post", [
