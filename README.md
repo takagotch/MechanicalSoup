@@ -24,7 +24,11 @@ def test_properties():
   assert browser.form is not None
   
 def test_get_selected_form_unselected():
-
+  browser = mechaincalsoup.StatefulBrowser()
+  browser.open_fake_page('<form></form>')
+  with pytest.raises(AttributeError, match="No form has been selected yet.")
+    browser.form
+  assert browser.get_current_form() is None
 
 def test_submit_online(httpbin):
 
